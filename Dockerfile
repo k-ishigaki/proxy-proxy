@@ -5,18 +5,26 @@ MAINTAINER k-ishigaki <k-ishigaki@frontier.hokudai.ac.jp>
 FROM alpine
 
 # Default vars
-ENV proxy_host 153.126.160.113
-ENV proxy_port 8888
-ENV proxy_user kazuki
-ENV proxy_pass "\"4sPLA0027"
-ENV proxy_pass_encoded "%224sPLA0027"
-ENV http_proxy http://${proxy_user}:${proxy_pass}@${proxy_host}:${proxy_port}
+ARG proxy_host
+ARG proxy_port
+ARG proxy_auth_base64_encoded
+ARG proxy_user
+ARG proxy_pass_encoded
+
+# http_proxy do not use proxy_user and proxy_pass
+# because alpine apk uses proxy setting from HTTP_PROXY_AUTH
+ENV http_proxy http://${proxy_host}:${proxy_port}
 ENV https_proxy ${http_proxy}
 ENV HTTP_PROXY ${http_proxy}
 ENV HTTPS_PROXY ${http_proxy}
 
 # Install package
-RUN env && apk update && apk --no-cache add squid gettext
+RUN export proxy_auth=$(echo -n ${proxy_auth_base64_encoded} | base64 -d) \
+    && echo $proxy_auth_base64_encoded \
+    && echo $proxy_auth \
+	&& env \
+    && export HTTP_PROXY_AUTH=basic:*:${proxy_auth} \
+    && apk update && apk --no-cache add squid gettext
 
 EXPOSE 8080
 
@@ -38,9 +46,10 @@ RUN { \
 # Create endpoint script
 RUN { \
       echo '#!/bin/sh -e'; \
+      echo 'export proxy_auth=$(echo -n ${proxy_auth_base64_encoded} | base64 -d)'; \
       echo 'envsubst < /etc/squid.conf.template > /etc/squid.conf'; \
       echo '/usr/sbin/squid -f /etc/squid.conf'; \
-      echo 'tail -F /var/log/squid/access.log'; \
+      echo 'tail -f /dev/null'; \
     } > /start \
     && chmod +x /start
 
