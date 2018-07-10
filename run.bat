@@ -4,7 +4,7 @@
 # vim :set ft=conf
 
 # if you want to debug this file, uncomment next line
-Set-PSDebug -Trace 1
+#Set-PSDebug -Trace 1
 
 Add-Type -AssemblyName System.Web
 
@@ -31,6 +31,8 @@ if (!(gcm docker-machine -ea SilentlyContinue)) {
 	Write-Host "docker-machine is not find" -ForegroundColor Red
 	Write-Host "you must install docker-toolbox before run this script" -ForegroundColor Red
 	Write-Host "install from here : https://docs.docker.com/toolbox/toolbox_install_windows/" -ForegroundColor Red
+    Write-Host "type any key to close this script" -ForegroundColor Yellow
+    [Console]::ReadKey($true) > $null
 	exit 1
 }
 
@@ -43,11 +45,9 @@ $proxy_pass_encoded = [System.Web.HttpUtility]::UrlEncode($proxy_pass)
 $proxy_auth_base64_encoded = String2Base64String("${proxy_user}:${proxy_pass}")
 $http_proxy = "http://${proxy_user}:${proxy_pass_encoded}@${proxy_host}:${proxy_port}/"
 
-$proxy_auth_base64_encoded
-
 # set proxy environment value for docker-machine
-set-item env:http_proxy -value $http_proxy
-set-item env:https_proxy -value $http_proxy
+$env:http_proxy = $http_proxy
+$env:https_proxy = $http_proxy
 
 # check connection via proxy
 $proxy = new-object System.Net.WebProxy("http://${proxy_host}:${proxy_port}/")
@@ -66,19 +66,24 @@ catch
 {
     Write-Host "connection error" -ForegroundColor Red
     Write-Host "prease check proxy settings and try again" -ForegroundColor Red
+    Write-Host "type any key to close this script" -ForegroundColor Yellow
+    [Console]::ReadKey($true) > $null
     exit 1
 }
 
 # create new docker-machine with proxy settings
-docker-machine rm default
+docker-machine rm -f default
 docker-machine create -d virtualbox --engine-env http_proxy="${http_proxy}" --engine-env https_proxy="${http_proxy}" default
-set-item env:no_proxy -value (docker-machine ip)
+$env:no_proxy = (docker-machine ip)
 & docker-machine env --shell powershell | Invoke-Expression
 Write-Host "docker-machine successfuly installed" -ForegroundColor Green
 
+# port forwarding settings
+C:\Program` Files\Oracle\VirtualBox\VBoxManage controlvm "default" natpf1 "docker-machine,tcp,127.0.0.1,8080,,8080"
 
 # install reverse proxy with docker
 docker build `
+--no-cache `
 -t k-ishigaki/proxy-proxy `
 --build-arg proxy_host="${proxy_host}" `
 --build-arg proxy_port="${proxy_port}" `
@@ -87,6 +92,7 @@ docker build `
 --build-arg proxy_pass_encoded="${proxy_pass_encoded}" `
 .
 
+# run proxy server
 docker run `
 -d `
 -p 8080:8080 `
@@ -98,5 +104,10 @@ docker run `
 --name proxy-proxy `
 k-ishigaki/proxy-proxy
 
-Write-Host "type any key to end this script" -ForegroundColor Green
+Write-Host "installation finished" -ForegroundColor Green
+Write-Host "you can set proxy with localhost:8080"
+
+Start-Sleep -s 3
+
+Write-Host "type any key to close this script" -ForegroundColor Yellow
 [Console]::ReadKey($true) > $null

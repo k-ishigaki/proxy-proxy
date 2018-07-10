@@ -1,8 +1,6 @@
-FROM ubuntu
+FROM alpine
 
 MAINTAINER k-ishigaki <k-ishigaki@frontier.hokudai.ac.jp>
-
-FROM alpine
 
 # Default vars
 ARG proxy_host
