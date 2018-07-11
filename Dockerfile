@@ -37,8 +37,13 @@ RUN { \
       echo 'http_access allow all_ports'; \
       echo 'http_access allow CONNECT all_ports'; \
       echo 'http_access allow all'; \
+	  echo 'never_direct allow all'; \
       echo 'never_direct allow CONNECT'; \
-      echo 'cache_peer ${proxy_host} parent ${proxy_port} 0 no-query no-netdb-exchange login=${proxy_user}:${proxy_pass_encoded}'; \
+      echo 'cache_peer ${proxy_host} parent ${proxy_port} 0 proxy_only no-query no-netdb-exchange login=${proxy_user}:${proxy_pass_encoded}'; \
+	  echo 'forwarded_for off'; \
+	  echo 'request_header_access X-Forwarded-For deny all'; \
+	  echo 'request_header_access Via deny all'; \
+	  echo 'request_header_access Cache-Control deny all'; \
     } > /etc/squid.conf.template
 
 # Create endpoint script
