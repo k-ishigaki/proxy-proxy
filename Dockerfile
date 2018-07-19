@@ -18,9 +18,6 @@ ENV HTTPS_PROXY ${http_proxy}
 
 # Install package
 RUN export proxy_auth=$(echo -n ${proxy_auth_base64_encoded} | base64 -d) \
-    && echo $proxy_auth_base64_encoded \
-    && echo $proxy_auth \
-	&& env \
     && export HTTP_PROXY_AUTH=basic:*:${proxy_auth} \
     && apk update && apk --no-cache add squid gettext
 
@@ -40,7 +37,9 @@ RUN { \
 	  echo 'never_direct allow all'; \
       echo 'never_direct allow CONNECT'; \
       echo 'cache_peer ${proxy_host} parent ${proxy_port} 0 proxy_only no-query no-netdb-exchange login=${proxy_user}:${proxy_pass_encoded}'; \
+	  echo 'visible_hostname none'; \
 	  echo 'forwarded_for off'; \
+	  echo 'request_header_access Referer deny all'; \
 	  echo 'request_header_access X-Forwarded-For deny all'; \
 	  echo 'request_header_access Via deny all'; \
 	  echo 'request_header_access Cache-Control deny all'; \
