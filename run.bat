@@ -95,7 +95,7 @@ docker build `
 # run proxy server
 docker run `
 -d `
--p 8080:8080 `
+--net=host `
 -e proxy_host="${proxy_host}" `
 -e proxy_port="${proxy_port}" `
 -e proxy_auth_base64_encoded="${proxy_auth_base64_encoded}" `
