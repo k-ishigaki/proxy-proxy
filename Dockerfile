@@ -29,6 +29,7 @@ RUN touch /var/log/squid/access.log \
 # Create template conf
 RUN { \
       echo 'http_port 8080'; \
+      echo 'dns_defnames on'; \
       echo 'acl all_ports port 0-65535'; \
       echo 'acl CONNECT method CONNECT'; \
       echo 'http_access allow all_ports'; \
