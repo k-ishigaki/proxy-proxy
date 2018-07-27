@@ -37,7 +37,7 @@ RUN { \
       echo 'http_access allow all'; \
 	  echo 'never_direct allow all'; \
       echo 'never_direct allow CONNECT'; \
-      echo 'cache_peer ${proxy_host} parent ${proxy_port} 0 proxy_only no-netdb-exchange login=${proxy_user}:${proxy_pass_encoded}'; \
+      echo 'cache_peer ${proxy_host} parent ${proxy_port} 0 proxy_only no-digest no-netdb-exchange login=${proxy_user}:${proxy_pass_encoded}'; \
 	  echo 'forwarded_for off'; \
 	  echo 'request_header_access Referer deny all'; \
       echo 'request_header_access X-Forwarded-For deny all'; \

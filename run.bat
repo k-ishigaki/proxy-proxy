@@ -76,6 +76,15 @@ docker-machine rm -f default
 docker-machine create -d virtualbox --engine-env http_proxy="${http_proxy}" --engine-env https_proxy="${http_proxy}" default
 $env:no_proxy = (docker-machine ip)
 & docker-machine env --shell powershell | Invoke-Expression
+# fix docker-machine ip
+docker-machine ssh default "{ echo '#!/bin/sh'; echo '/etc/init.d/services/dhcp stop'; echo 'ifconfig eth1 192.168.99.50 netmask 255.255.255.0 broadcast 192.168.99.255 up'; } > bootsync.sh"
+docker-machine ssh default "sudo mv bootsync.sh /var/lib/boot2docker/"
+docker-machine ssh default "sudo chmod 755 /var/lib/boot2docker/bootsync.sh"
+docker-machine restart
+docker-machine regenerate-certs -f
+$env:no_proxy = (docker-machine ip)
+& docker-machine env --shell powershell | Invoke-Expression
+
 Write-Host "docker-machine successfuly installed" -ForegroundColor Green
 
 # port forwarding settings
