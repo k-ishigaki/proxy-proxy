@@ -95,6 +95,11 @@ Write-Host "docker-machine successfuly installed" -ForegroundColor Green
 # port forwarding settings
 C:\Program` Files\Oracle\VirtualBox\VBoxManage controlvm "default" natpf1 "docker-machine,tcp,127.0.0.1,8080,,8080"
 
+# save docker machine state when shutdown (workaround for preventing shutdown issue)
+C:\Program` Files\Oracle\VirtualBox\VBoxManage.exe controlvm "default" savestate
+C:\Program` Files\Oracle\VirtualBox\VBoxManage.exe setextradata "default" GUI/DefaultCloseAction SaveState
+C:\Program` Files\Oracle\VirtualBox\VBoxManage.exe startvm "default"
+
 # install reverse proxy with docker
 docker build `
 --no-cache `
