@@ -8,7 +8,7 @@ Proxy for Proxy with Basic Authorization
 ## Usage
 1. Install Docker Toolbox
 2. Download this repository
-3. Double click `run.bat` on explorer 
+3. Double click `install.bat` on explorer 
 4. Enter your proxy settings
 
   ```
