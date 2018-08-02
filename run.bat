@@ -76,12 +76,17 @@ docker-machine rm -f default
 docker-machine create -d virtualbox --engine-env http_proxy="${http_proxy}" --engine-env https_proxy="${http_proxy}" default
 $env:no_proxy = (docker-machine ip)
 & docker-machine env --shell powershell | Invoke-Expression
-# fix docker-machine ip
-docker-machine ssh default "{ echo '#!/bin/sh'; echo '/etc/init.d/services/dhcp stop'; echo 'ifconfig eth1 192.168.99.50 netmask 255.255.255.0 broadcast 192.168.99.255 up'; } > bootsync.sh"
+# disable dhcp server for host-only adapter and fix ip of host-only adapter
+docker-machine ssh default "{`
+echo '#!/bin/sh';`
+echo '[[ -f /var/run/udhcpc.eth1.pid ]] && kill `$(cat /var/run/udhcpc.eth1.pid) 2>/dev/null || :';`
+echo 'ifconfig eth1 192.168.99.50 netmask 255.255.255.0 broadcast 192.168.99.255 up';`
+} > bootsync.sh"
 docker-machine ssh default "sudo mv bootsync.sh /var/lib/boot2docker/"
 docker-machine ssh default "sudo chmod 755 /var/lib/boot2docker/bootsync.sh"
-docker-machine restart
+docker-machine ssh default "sudo /var/lib/boot2docker/bootsync.sh"
 docker-machine regenerate-certs -f
+docker-machine ssh default "ip addr show eth1 | grep 'inet.*eth1'"
 $env:no_proxy = (docker-machine ip)
 & docker-machine env --shell powershell | Invoke-Expression
 
