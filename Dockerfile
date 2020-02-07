@@ -1,6 +1,6 @@
 FROM alpine
 
-MAINTAINER k-ishigaki <k-ishigaki@frontier.hokudai.ac.jp>
+LABEL maintainer="Kazuki Ishigaki<k-ishigaki@frontier.hokudai.ac.jp>"
 
 # Default vars
 ARG proxy_host
