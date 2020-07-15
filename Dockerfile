@@ -3,6 +3,7 @@ FROM alpine
 LABEL maintainer="Kazuki Ishigaki<k-ishigaki@frontier.hokudai.ac.jp>"
 
 # Default vars
+ARG hostname=unknown
 ARG proxy_host
 ARG proxy_port
 ARG proxy_auth_base64_encoded
@@ -37,11 +38,14 @@ RUN { \
     echo 'http_access allow all'; \
     echo 'never_direct allow all'; \
     echo 'never_direct allow CONNECT'; \
-    echo 'cache_peer ${proxy_host} parent ${proxy_port} 0 proxy_only no-digest no-netdb-exchange login=${proxy_user}:${proxy_pass_encoded}'; \
-    echo 'forwarded_for off'; \
-    echo 'request_header_access X-Forwarded-For deny all'; \
-    echo 'request_header_access Via deny all'; \
+    echo 'cache_peer ${proxy_host} parent ${proxy_port} 0 proxy-only no-digest no-netdb-exchange login=${proxy_user}:${proxy_pass_encoded}'; \
+    echo 'forwarded_for delete'; \
+    echo 'visible_hostname ${hostname}'; \
+    echo 'via off'; \
+    echo 'cache deny all'; \
     echo 'request_header_access Cache-Control deny all'; \
+    echo 'request_header_access Connection deny all'; \
+    echo 'request_header_add Proxy-Connection "Keep-Alive" all'; \
     } > /etc/squid.conf.template
 
 # Create endpoint script
